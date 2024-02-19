@@ -122,6 +122,69 @@ describe('Topics', () => {
 
 }); // Describe: Topics
 
+describe('Articles', () => {
+    
+    describe('GET /api/articles/:article_id', () => {
+        
+        test('should respond with a 200 status, article object & appropriate properties when provided a valid id', () => {
+            // arrange
+            const articleId = 1;
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}`)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('article');
+                expect(response.body.article).toMatchObject({
+                    article_id: expect.any(Number),
+                    title: expect.any(String),
+                    topic: expect.any(String),
+                    author: expect.any(String),
+                    body: expect.any(String),
+                    created_at: expect.any(String),
+                    votes: expect.any(Number),
+                    /**
+                     * TODO: could extend custom matcher: toBeValid<Request|APIEndpoint|...> to accept URL
+                     * + others & use to validate article_img_url, amongst other things.
+                     */
+                    article_img_url: expect.any(String)
+                });
+            });
+        });
+
+        test('should respond with a 404 not found if the id is valid but does not exist', () => {
+            // arrange
+            const outOfBoundsArticleId = testData.articleData.length + 999;
+            // act
+            return request(app)
+            .get(`/api/articles/${outOfBoundsArticleId}`)
+            .expect(404)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+        test('should respond with a 400 bad request if the id is invalid (e.g: is of the wrong type)', () => {
+            // arrange
+            const invalidArticleId = 'not-a-valid-article-id';
+            // act
+            return request(app)
+            .get(`/api/articles/${invalidArticleId}`)
+            .expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+    }); // Describe: GET /api/article/:article_id
+
+}); // Describe: Articles
+
 describe('Generic Error Handling', () => {
 
     describe('Request to /api/this-is-not-an-endpoint should respond with a 404 and a msg body of: not found, regardless of method', () => {
