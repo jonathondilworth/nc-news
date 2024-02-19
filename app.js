@@ -4,7 +4,14 @@ const app = express();
 
 const { getTopics } = require('./controllers/topics.controller');
 
+const apiDesc = require('./endpoints');
+
 // middleware: (nothing yet registered)
+
+// routes: specification
+app.get('/api', (request, response, next) => {
+    response.status(200).send({ api: apiDesc });
+});
 
 // routes: topics
 app.get('/api/topics', getTopics);

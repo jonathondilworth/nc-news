@@ -35,6 +35,9 @@
   "jest": {
     "setupFilesAfterEnv": [
       "jest-extended/all"
+    ],
+    "testPathIgnorePatterns" : [
+      "<rootDir>/__tests__/helpers/" 
     ]
   }
 }
