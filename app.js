@@ -8,9 +8,8 @@ const apiDesc = require('./endpoints');
 
 // middleware: (nothing yet registered)
 
+// routes: specification
 app.get('/api', (request, response, next) => {
-    // console.log(endpoints);
-    // response.status(200).send({ api: endpoints });
     response.status(200).send({ api: apiDesc });
 });
 
