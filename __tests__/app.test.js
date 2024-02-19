@@ -92,13 +92,7 @@ describe('API', () => {
 
 describe('Topics', () => {
     
-    test('GET /api/topics should respond with a 200 status code', () => {
-        return request(app)
-        .get('/api/topics')
-        .expect(200);
-    });
-    
-    test('GET /api/topics response should contain an array of topics', () => {
+    test('GET /api/topics response should have a status code of 200 & contain an array of topics', () => {
         return request(app)
         .get('/api/topics')
         .expect(200)
@@ -108,22 +102,15 @@ describe('Topics', () => {
         });
     });
 
-    test('GET /api/topics response should be the correct length (same as topicData length)', () => {
+    test('GET /api/topics topics should have properties: description & slug & a correct length', () => {
         return request(app)
         .get('/api/topics')
         .expect(200)
         .then((response) => {
             const topics = response.body.topics;
-            expect(topics).toHaveLength(testData.topicData.length);
-        });
-    });
-
-    test('GET /api/topics topics should have properties: description & slug', () => {
-        return request(app)
-        .get('/api/topics')
-        .expect(200)
-        .then((response) => {
-            const topics = response.body.topics;
+            // J.D: Please be aware that if you modify the test data, this test may fail
+            expect(testData.topicData.length).toBe(3);
+            expect(topics).toHaveLength(3);
             topics.forEach((topic) => {
                 expect(topic).toMatchObject({
                     description: expect.any(String),
