@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const apiDesc = require('./endpoints');
 const { getTopics } = require('./controllers/topics.controller');
-const { getArticle } = require('./controllers/articles.controller');
+const { getArticle, getArticles } = require('./controllers/articles.controller');
 
 // middleware: (nothing yet registered - besides error handling at bottom of file)
 
@@ -12,6 +12,7 @@ app.get('/api', (request, response, next) => {
 });
 
 // routes: articles
+app.get('/api/articles', getArticles);
 app.get('/api/articles/:article_id', getArticle);
 
 // routes: topics
@@ -25,12 +26,13 @@ app.all('/*', (request, response, next) => {
 // register error handling middleware: pSQL errors
 app.use((err, request, response, next) => {
 	/**
+	 * Note (From Feedback): currently only require 22P02, add other codes in as they become required
 	 * 22P02: invalid text representation
 	 * 42601: syntax error
 	 * 42703: undefined column or parameter (limit is cast to NaN << throws this code)
 	 * 23502: violates not null constraint
 	 */
-	const badRequestErrCodes = ['22P02', '42601', '42703', '23502'];
+	const badRequestErrCodes = ['22P02'];
 	if (badRequestErrCodes.includes(err.code)) {
 		response.status(400).send({ msg: 'bad request' });
 	}
