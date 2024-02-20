@@ -2,10 +2,10 @@ const { selectArticle, selectArticles } = require('../models/articles.model');
 
 exports.getArticle = (request, response, next) => {
     const articleId = request.params.article_id;
-    selectArticle(articleId)
+    return selectArticle(articleId)
     .then(({ rows }) => {
         if (rows.length === 0) {
-            next({ status: 404, msg: 'not found' });
+            return Promise.reject({ status: 404, msg: 'not found' });
         }
         response.status(200).send({ article: rows[0] });
     })
@@ -13,7 +13,7 @@ exports.getArticle = (request, response, next) => {
 };
 
 exports.getArticles = (request, response, next) => {
-    selectArticles()
+    return selectArticles()
     .then(({ rows }) => {
         response.status(200).send({ articles: rows });
     })
