@@ -6,6 +6,8 @@ const testData = require('../db/data/test-data/index');
 const apiDesc = require('../endpoints');
 const { toBeValidAPIEndpoint, toBeValidRequestMethod } = require('./helpers/custom');
 
+require('jest-sorted')
+
 beforeEach(() => {
 	return seed(testData);
 });
@@ -151,13 +153,30 @@ describe('Articles', () => {
                         author: expect.any(String),
                         title: expect.any(String),
                         topic: expect.any(String),
-                        body: expect.any(String),
                         created_at: expect.any(String),
                         votes: expect.any(Number),
                         article_img_url: expect.any(String),
                         comment_count: expect.any(String)
                     });
+                    // the response should not contain a body
+                    expect(article).not.toMatchObject({
+                        body: expect.any(String)
+                    });
                 });
+            });
+        });
+
+        test('should respond with an array of articles in descending order (ordered by date)', () => {
+            return request(app)
+            .get(`/api/articles`)
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles;
+                expect(articles.map((article) => {
+                    return article.created_at;
+                })).toBeSorted({
+					descending: true
+				});
             });
         });
 
