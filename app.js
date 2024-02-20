@@ -3,6 +3,7 @@ const app = express();
 const apiDesc = require('./endpoints');
 const { getTopics } = require('./controllers/topics.controller');
 const { getArticle, getArticles } = require('./controllers/articles.controller');
+const { getCommentsByArticleId } = require('./controllers/comments.controller');
 
 // middleware: (nothing yet registered - besides error handling at bottom of file)
 
@@ -14,6 +15,9 @@ app.get('/api', (request, response, next) => {
 // routes: articles
 app.get('/api/articles', getArticles);
 app.get('/api/articles/:article_id', getArticle);
+
+// routes: comments
+app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
 
 // routes: topics
 app.get('/api/topics', getTopics);

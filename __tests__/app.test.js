@@ -156,7 +156,7 @@ describe('Articles', () => {
                         created_at: expect.any(String),
                         votes: expect.any(Number),
                         article_img_url: expect.any(String),
-                        comment_count: expect.any(String)
+                        comment_count: expect.any(Number)
                     });
                     // the response should not contain a body
                     expect(article).not.toMatchObject({
@@ -240,6 +240,111 @@ describe('Articles', () => {
         });
 
     }); // Describe: GET /api/article/:article_id
+
+    describe('GET /api/articles/:article_id/comments', () => {
+        
+        test('should respond with an array of comments', () => {
+            // arrange
+            const articleId = 1;
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}/comments`)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('comments');
+                expect(response.body.comments).toBeInstanceOf(Array);
+            });
+        });
+
+        test('should respond with an array of comments of correct length and with correct attributes', () => {
+            // arrange
+            const articleId = 1;
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}/comments`)
+            .expect(200)
+            .then((response) => {
+                // assert
+                const comments = response.body.comments;
+                // J.D: modifications of test data (comments) may break this test
+                //      please be cautious adding or removing test comments
+                expect(comments).toHaveLength(11);
+                comments.forEach((comment) => {
+                    expect(comment).toMatchObject({
+                        comment_id: expect.any(Number),
+                        votes: expect.any(Number),
+                        created_at: expect.any(String),
+                        author: expect.any(String),
+                        body: expect.any(String),
+                        article_id: expect.any(Number)
+                    });
+                });
+            });
+        });
+
+        test('should respond with most recent comments first', () => {
+            // arrange
+            const articleId = 1;
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}/comments`)
+            .expect(200)
+            .then((response) => {
+                // assert
+                const comments = response.body.comments;
+                expect(comments).toHaveLength(11);
+                expect(comments.map((comment) => {
+                    return comment.created_at;
+                })).toBeSorted({
+                    descending: true
+                });
+            });
+        });
+
+        test('should respond a 404 not found if the article id does not exist', () => {
+            // arrange
+            const articleId = 999;
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}/comments`)
+            .expect(404)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+        test('should respond a 400 bad request if the article id is invalid', () => {
+            // arrange
+            const articleId = "this-is-an-invalid-article-id";
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}/comments`)
+            .expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond an empty array if the article id is valid but there are no comments', () => {
+            // arrange
+            const articleId = 4;
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}/comments`)
+            .expect(200)
+            .then((response) => {
+                // assert
+                const comments = response.body.comments;
+                expect(comments).toHaveLength(0);
+            });
+        });
+
+    }); // Describe: GET /api/articles/:article_id/comments
 
 }); // Describe: Articles
 
