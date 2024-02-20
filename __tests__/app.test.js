@@ -124,6 +124,45 @@ describe('Topics', () => {
 
 describe('Articles', () => {
     
+    describe('GET /api/articles', () => {
+        
+        test('should respond with a 200 status & an array of articles', () => {
+            return request(app)
+            .get(`/api/articles`)
+            .expect(200)
+            .then((response) => {
+                expect(response.body).toHaveProperty('articles');
+                expect(response.body.articles).toBeInstanceOf(Array);
+            });
+        });
+
+        test('should respond array of articles (of correct length) with appropriate properties', () => {
+            return request(app)
+            .get(`/api/articles`)
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles;
+                // J.D: Please be aware that if you modify the test data, this test may fail
+                expect(testData.articleData).toHaveLength(13);
+                expect(articles).toHaveLength(13);
+                articles.forEach((article) => {
+                    expect(article).toMatchObject({
+                        article_id: expect.any(Number),
+                        author: expect.any(String),
+                        title: expect.any(String),
+                        topic: expect.any(String),
+                        body: expect.any(String),
+                        created_at: expect.any(String),
+                        votes: expect.any(Number),
+                        article_img_url: expect.any(String),
+                        comment_count: expect.any(String)
+                    });
+                });
+            });
+        });
+
+    }); // Describe: GET /api/articles
+
     describe('GET /api/articles/:article_id', () => {
         
         test('should respond with a 200 status, article object & appropriate properties when provided a valid id', () => {
