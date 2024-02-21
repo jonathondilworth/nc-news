@@ -3,9 +3,10 @@ const app = express();
 const apiDesc = require('./endpoints');
 const { getTopics } = require('./controllers/topics.controller');
 const { getArticle, getArticles } = require('./controllers/articles.controller');
-const { getCommentsByArticleId } = require('./controllers/comments.controller');
+const { getCommentsByArticleId, postComment } = require('./controllers/comments.controller');
 
-// middleware: (nothing yet registered - besides error handling at bottom of file)
+// middleware
+app.use(express.json());
 
 // routes: specification
 app.get('/api', (request, response, next) => {
@@ -18,6 +19,7 @@ app.get('/api/articles/:article_id', getArticle);
 
 // routes: comments
 app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
+app.post('/api/articles/:article_id/comments', postComment);
 
 // routes: topics
 app.get('/api/topics', getTopics);

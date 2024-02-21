@@ -241,6 +241,10 @@ describe('Articles', () => {
 
     }); // Describe: GET /api/article/:article_id
 
+}); // Describe: Articles
+
+describe('Comments', () => {
+    
     describe('GET /api/articles/:article_id/comments', () => {
         
         test('should respond with an array of comments', () => {
@@ -346,7 +350,130 @@ describe('Articles', () => {
 
     }); // Describe: GET /api/articles/:article_id/comments
 
-}); // Describe: Articles
+    describe('POST /api/articles/:article_id/comments', () => {
+        
+        test('should respond with a 201 status and the new comment obj persisted to the db', () => {
+            const articleId = 9;
+            const commentBody = {
+				username: 'rogersop',
+                body: 'How Lovely!'
+			};
+			return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(201)
+			.then((response) => {
+                expect(response.body).toHaveProperty('comment');
+				const comment = response.body.comment;
+                expect(comment).toHaveProperty('body', 'How Lovely!');
+                expect(comment).toHaveProperty('author', 'rogersop');
+                expect(comment).toHaveProperty('article_id', 9);
+                expect(comment).toHaveProperty('votes', 0);
+                expect(comment).toMatchObject({
+                    comment_id: expect.any(Number),
+                    created_at: expect.any(String),
+                });
+			});
+        });
+
+        test('should respond with a 404 status if the article id is valid but does not exist', () => {
+            const articleId = 999;
+            const commentBody = {
+				username: 'rogersop',
+                body: 'How might I try and break this API?'
+            };
+            return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(404)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+        test('should respond with a 400 status (bad request) if the article id is invalid', () => {
+            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const commentBody = {
+				username: 'rogersop',
+                body: 'How might I try and break this API?'
+            };
+            return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(400)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond with a 400 status (bad request) if the comment payload is invalid (user does not exist)', () => {
+            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const commentBody = {
+				username: 'injecting-a-fake-user',
+                body: 'How might I try and break this API?'
+            };
+            return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(400)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond with a 400 status (bad request) if the comment payload is invalid (body is not a string)', () => {
+            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const commentBody = {
+				username: 'rogersop',
+                body: false
+            };
+            return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(400)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond with a 400 status (bad request) if the comment payload does not contain a username', () => {
+            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const commentBody = {
+                body: 'How might I try and break this API?'
+            };
+            return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(400)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond with a 400 status (bad request) if the comment payload does not contain a body', () => {
+            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const commentBody = {
+                username: 'rogersop'
+            };
+            return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(400)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+    });
+
+});
+
 
 describe('Generic Error Handling', () => {
 
