@@ -20,3 +20,12 @@ exports.selectArticles = () => {
          ORDER BY articles.created_at DESC`
     );
 };
+
+exports.updateArticleVotes = (id, voteCount) => {
+    return db.query(`
+        UPDATE articles
+        SET votes = votes + $1
+        WHERE article_id = $2
+        RETURNING *
+    `, [voteCount, id]);
+};
