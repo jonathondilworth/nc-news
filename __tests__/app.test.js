@@ -490,7 +490,9 @@ describe('Comments', () => {
             const commentBody = {
 				username: 'rogersop',
                 body: 'How Lovely!',
-                this: 'is'
+                this: 'is',
+                another: 'ignorable',
+                param: '!'
 			};
 			return request(app)
 			.post(`/api/articles/${articleId}/comments`)
@@ -542,7 +544,7 @@ describe('Comments', () => {
             });
         });
 
-        test('should respond with a 400 status (bad request) if the comment payload is invalid (user does not exist)', () => {
+        test('should respond with a 404 status (not found) if the user does not exist', () => {
             const articleId = 9;
             const commentBody = {
 				username: 'injecting-a-fake-user',
@@ -551,10 +553,10 @@ describe('Comments', () => {
             return request(app)
 			.post(`/api/articles/${articleId}/comments`)
 			.send(commentBody)
-			.expect(400)
+			.expect(404)
             .then((response) => {
                 expect(response.body).toHaveProperty('msg');
-                expect(response.body.msg).toBe('bad request');
+                expect(response.body.msg).toBe('not found');
             });
         });
 
