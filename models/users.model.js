@@ -8,6 +8,6 @@ exports.selectUserByUsername = (username) => {
     .then(({ rows }) => {
         return rows.length === 0
             ? Promise.reject({ status: 404, msg: 'not found' })
-            : { user: rows[0] };
+            : rows[0];
     });
 };

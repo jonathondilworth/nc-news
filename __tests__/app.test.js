@@ -623,8 +623,8 @@ describe('Comments', () => {
                 // there should now be a total of zero comments on article 6
                 return selectCommentsByArticleId(6);
             })
-            .then(({ rows }) => {
-                expect(rows).toHaveLength(0);
+            .then((result) => {
+                expect(result).toHaveLength(0);
             });
         });
 

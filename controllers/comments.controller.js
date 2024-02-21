@@ -10,11 +10,7 @@ exports.getCommentsByArticleId = (request, response, next) => {
     ];
     return Promise.all(promises).then((resolved) => {
         const [ articleResult, commentsResult ] = resolved;
-        if (articleResult.rowCount === 0) {
-            return Promise.reject({ status: 404, msg: 'not found' });
-        }
-        // if the article exists with no comments, returns []
-        response.status(200).send({ comments: commentsResult.rows });
+        response.status(200).send({ comments: commentsResult });
     })
     .catch(next);
 };
@@ -22,26 +18,20 @@ exports.getCommentsByArticleId = (request, response, next) => {
 exports.postComment = (request, response, next) => {
     const articleId = request.params.article_id;
     const { username, body } = request.body;
-
     // J.D: uncertain as to whether this is neccesary
     //      since any datatype will be cast to string
     if (!username || typeof body !== 'string') {
         next({ status: 400, msg: 'bad request'});
     }
-
     return selectUserByUsername(username)
-    .then(({ user }) => {
+    .then((result) => {
         return selectArticle(articleId);
     })
-    .then(({ rows }) => {
-        // J.D: TODO: Migrate logic to the model (similar to the selectUserByUsername)
-        // However, there are a lot of similar changes, going to use a seperate branch for this
-        return rows.length === 0
-            ? Promise.reject({ status: 404, msg: 'not found' })
-            : insertComment(articleId, username, body);
+    .then((result) => {
+        return insertComment(articleId, username, body);
     })
-    .then(({ rows }) => {
-        response.status(201).send({ comment: rows[0] });
+    .then((result) => {
+        response.status(201).send({ comment: result });
     })
     .catch(next);
 }
@@ -49,11 +39,8 @@ exports.postComment = (request, response, next) => {
 exports.deleteComment = (request, response, next) => {
     const commentId = request.params.comment_id;
     return deleteCommentById(commentId)
-    .then(({ rowCount }) => {
-        if (rowCount === 0) {
-            return Promise.reject({ status: 404, msg: 'not found' });
-        }
-        response.status(204).send({});
+    .then((result) => {
+        response.status(204).send();
     })
     .catch(next);
 };
