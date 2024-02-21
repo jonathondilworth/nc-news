@@ -1,5 +1,6 @@
 const { selectArticle } = require("../models/articles.model");
 const { selectCommentsByArticleId, insertComment } = require("../models/comments.model");
+const { selectUserByUsername } = require("../models/users.model");
 
 exports.getCommentsByArticleId = (request, response, next) => {
     const articleId = request.params.article_id;
@@ -20,12 +21,24 @@ exports.getCommentsByArticleId = (request, response, next) => {
 
 exports.postComment = (request, response, next) => {
     const articleId = request.params.article_id;
-    const requestBody = request.body;
-    return selectArticle(articleId)
+    const { username, body } = request.body;
+
+    // J.D: uncertain as to whether this is neccesary
+    //      since any datatype will be cast to string
+    if (!username || typeof body !== 'string') {
+        next({ status: 400, msg: 'bad request'});
+    }
+
+    return selectUserByUsername(username)
+    .then(({ user }) => {
+        return selectArticle(articleId);
+    })
     .then(({ rows }) => {
-        return (rows.length === 0)
+        // J.D: TODO: Migrate logic to the model (similar to the selectUserByUsername)
+        // However, there are a lot of similar changes, going to use a seperate branch for this
+        return rows.length === 0
             ? Promise.reject({ status: 404, msg: 'not found' })
-            : insertComment(articleId, requestBody.username, requestBody.body);
+            : insertComment(articleId, username, body);
     })
     .then(({ rows }) => {
         response.status(201).send({ comment: rows[0] });
