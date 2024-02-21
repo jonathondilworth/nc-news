@@ -485,6 +485,31 @@ describe('Comments', () => {
 			});
         });
 
+        test('should respond with a 201 status if the body contains username & body + additional key-value pairs (ignores them)', () => {
+            const articleId = 9;
+            const commentBody = {
+				username: 'rogersop',
+                body: 'How Lovely!',
+                this: 'is'
+			};
+			return request(app)
+			.post(`/api/articles/${articleId}/comments`)
+			.send(commentBody)
+			.expect(201)
+			.then((response) => {
+                expect(response.body).toHaveProperty('comment');
+				const comment = response.body.comment;
+                expect(comment).toHaveProperty('body', 'How Lovely!');
+                expect(comment).toHaveProperty('author', 'rogersop');
+                expect(comment).toHaveProperty('article_id', 9);
+                expect(comment).toHaveProperty('votes', 0);
+                expect(comment).toMatchObject({
+                    comment_id: expect.any(Number),
+                    created_at: expect.any(String),
+                });
+			});
+        });
+
         test('should respond with a 404 status if the article id is valid but does not exist', () => {
             const articleId = 999;
             const commentBody = {
@@ -518,7 +543,7 @@ describe('Comments', () => {
         });
 
         test('should respond with a 400 status (bad request) if the comment payload is invalid (user does not exist)', () => {
-            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const articleId = 9;
             const commentBody = {
 				username: 'injecting-a-fake-user',
                 body: 'How might I try and break this API?'
@@ -534,10 +559,10 @@ describe('Comments', () => {
         });
 
         test('should respond with a 400 status (bad request) if the comment payload is invalid (body is not a string)', () => {
-            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const articleId = 9;
             const commentBody = {
 				username: 'rogersop',
-                body: false
+                body: { "invalid": "type" }
             };
             return request(app)
 			.post(`/api/articles/${articleId}/comments`)
@@ -550,7 +575,7 @@ describe('Comments', () => {
         });
 
         test('should respond with a 400 status (bad request) if the comment payload does not contain a username', () => {
-            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const articleId = 9;
             const commentBody = {
                 body: 'How might I try and break this API?'
             };
@@ -565,7 +590,7 @@ describe('Comments', () => {
         });
 
         test('should respond with a 400 status (bad request) if the comment payload does not contain a body', () => {
-            const articleId = 'this-is-not-a-valid-api-endpoint';
+            const articleId = 9;
             const commentBody = {
                 username: 'rogersop'
             };

@@ -21,6 +21,13 @@ exports.getCommentsByArticleId = (request, response, next) => {
 exports.postComment = (request, response, next) => {
     const articleId = request.params.article_id;
     const requestBody = request.body;
+
+    // J.D: uncertain as to whether this is neccesary
+    //      since any datatype will be cast to string
+    if (typeof requestBody.body !== 'string') {
+        next({ status: 400, msg: 'bad request' });
+    }
+
     return selectArticle(articleId)
     .then(({ rows }) => {
         return (rows.length === 0)
@@ -28,6 +35,7 @@ exports.postComment = (request, response, next) => {
             : insertComment(articleId, requestBody.username, requestBody.body);
     })
     .then(({ rows }) => {
+        console.log(rows);
         response.status(201).send({ comment: rows[0] });
     })
     .catch(next);
