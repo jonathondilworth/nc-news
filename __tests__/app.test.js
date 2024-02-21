@@ -285,6 +285,24 @@ describe('Articles', () => {
             });
         });
 
+        test('should respond /w 200 & unaltered article if inc_votes is not within the payload (ignores extra properties)', () => {
+            // arrange
+            const articleId = 2;
+            const patchBody = {
+                some_random_key: 'random data', 
+                not_inc_votes: 42
+            };
+            // act
+            return request(app)
+            .patch(`/api/articles/${articleId}`)
+            .send(patchBody)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body.article).toHaveProperty('votes', 0);
+            });
+        });
+
         test('should respond with a 404 not found if the article id is valid, but does not exist', () => {
             // arrange
             const articleId = 999;
@@ -321,22 +339,6 @@ describe('Articles', () => {
             // arrange
             const articleId = 2;
             const patchBody = { inc_votes: 'not-a-number' };
-            // act
-            return request(app)
-            .patch(`/api/articles/${articleId}`)
-            .send(patchBody)
-            .expect(400)
-            .then((response) => {
-                // assert
-                expect(response.body).toHaveProperty('msg');
-                expect(response.body.msg).toBe('bad request');
-            });
-        });
-
-        test('should respond with a 400 bad request if the payload key is invalid', () => {
-            // arrange
-            const articleId = 2;
-            const patchBody = { invalid_key: 42 };
             // act
             return request(app)
             .patch(`/api/articles/${articleId}`)
@@ -623,8 +625,8 @@ describe('Comments', () => {
                 // there should now be a total of zero comments on article 6
                 return selectCommentsByArticleId(6);
             })
-            .then(({ rows }) => {
-                expect(rows).toHaveLength(0);
+            .then((result) => {
+                expect(result).toHaveLength(0);
             });
         });
 
