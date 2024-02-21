@@ -2,7 +2,7 @@ const express = require('express');
 const app = express();
 const apiDesc = require('./endpoints');
 const { getTopics } = require('./controllers/topics.controller');
-const { getArticle, getArticles } = require('./controllers/articles.controller');
+const { getArticle, getArticles, patchArticleVotes } = require('./controllers/articles.controller');
 const { getCommentsByArticleId, postComment } = require('./controllers/comments.controller');
 
 // middleware
@@ -16,6 +16,7 @@ app.get('/api', (request, response, next) => {
 // routes: articles
 app.get('/api/articles', getArticles);
 app.get('/api/articles/:article_id', getArticle);
+app.patch('/api/articles/:article_id', patchArticleVotes);
 
 // routes: comments
 app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
@@ -38,7 +39,7 @@ app.use((err, request, response, next) => {
 	 * 42703: undefined column or parameter (limit is cast to NaN << throws this code)
 	 * 23502: violates not null constraint
 	 */
-	const badRequestErrCodes = ['22P02'];
+	const badRequestErrCodes = ['22P02', '23502'];
 	if (badRequestErrCodes.includes(err.code)) {
 		response.status(400).send({ msg: 'bad request' });
 	}

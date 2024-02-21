@@ -1,4 +1,4 @@
-const { selectArticle, selectArticles } = require('../models/articles.model');
+const { selectArticle, selectArticles, updateArticleVotes } = require('../models/articles.model');
 
 exports.getArticle = (request, response, next) => {
     const articleId = request.params.article_id;
@@ -16,6 +16,21 @@ exports.getArticles = (request, response, next) => {
     return selectArticles()
     .then(({ rows }) => {
         response.status(200).send({ articles: rows });
+    })
+    .catch(next);
+};
+
+exports.patchArticleVotes = (request, response, next) => {
+    const articleId = request.params.article_id;
+    const voteCount = request.body.inc_votes;
+    return selectArticle(articleId)
+    .then(({ rows }) => {
+        return (rows.length === 0)
+            ? Promise.reject({ status: 404, msg: 'not found' })
+            : updateArticleVotes(articleId, voteCount);
+    })
+    .then(({ rows }) => {
+        response.status(200).send({ article: rows[0] });
     })
     .catch(next);
 };

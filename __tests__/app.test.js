@@ -241,6 +241,115 @@ describe('Articles', () => {
 
     }); // Describe: GET /api/article/:article_id
 
+    describe('PATCH /api/articles/:article_id', () => {
+        
+        test('should accept a body of form { inc_votes: x }, updates correct article by x votes & responds /w updated obj', () => {
+            // arrange
+            const articleId = 2;
+            const patchBody = { inc_votes: 42 };
+            // act
+            return request(app)
+            .patch(`/api/articles/${articleId}`)
+            .send(patchBody)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('article');
+                expect(response.body.article).toHaveProperty('votes', 42);
+                expect(response.body.article).toMatchObject({
+                    article_id: expect.any(Number),
+                    title: expect.any(String),
+                    topic: expect.any(String),
+                    author: expect.any(String),
+                    body: expect.any(String),
+                    created_at: expect.any(String),
+                    votes: expect.any(Number),
+                    article_img_url: expect.any(String)
+                });
+            });
+        });
+
+        test('should also function as expected with negative numbers (decrement the vote count)', () => {
+            // arrange
+            const articleId = 2;
+            const patchBody = { inc_votes: -42 };
+            // act
+            return request(app)
+            .patch(`/api/articles/${articleId}`)
+            .send(patchBody)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body.article).toHaveProperty('votes', -42);
+            });
+        });
+
+        test('should respond with a 404 not found if the article id is valid, but does not exist', () => {
+            // arrange
+            const articleId = 999;
+            const patchBody = { inc_votes: 42 };
+            // act
+            return request(app)
+            .patch(`/api/articles/${articleId}`)
+            .send(patchBody)
+            .expect(404)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+        test('should respond with a 400 bad request if the article id is invalid', () => {
+            // arrange
+            const articleId = "this-is-not-an-article-id";
+            const patchBody = { inc_votes: 42 };
+            // act
+            return request(app)
+            .patch(`/api/articles/${articleId}`)
+            .send(patchBody)
+            .expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond with a 400 bad request if the payload value is invalid', () => {
+            // arrange
+            const articleId = 2;
+            const patchBody = { inc_votes: 'not-a-number' };
+            // act
+            return request(app)
+            .patch(`/api/articles/${articleId}`)
+            .send(patchBody)
+            .expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond with a 400 bad request if the payload key is invalid', () => {
+            // arrange
+            const articleId = 2;
+            const patchBody = { invalid_key: 42 };
+            // act
+            return request(app)
+            .patch(`/api/articles/${articleId}`)
+            .send(patchBody)
+            .expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+    });
+
 }); // Describe: Articles
 
 describe('Comments', () => {
