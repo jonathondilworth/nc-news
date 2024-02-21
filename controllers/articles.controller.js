@@ -19,7 +19,7 @@ exports.getArticles = (request, response, next) => {
 
 exports.patchArticleVotes = (request, response, next) => {
     const articleId = request.params.article_id;
-    const voteCount = request.body.inc_votes;
+    const voteCount = request.body.inc_votes ?? 0;
     return selectArticle(articleId)
     .then((result) => {
         return updateArticleVotes(articleId, voteCount);
