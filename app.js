@@ -57,7 +57,6 @@ app.use((err, request, response, next) => {
 
 // fallthrough exceptions (catch-all): 500
 app.use((err, request, response, next) => {
-	console.log(err);
 	response.status(500).send({ msg: 'Internal Server Error' });
 });
 

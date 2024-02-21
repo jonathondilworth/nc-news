@@ -41,7 +41,6 @@ exports.postComment = (request, response, next) => {
             : insertComment(articleId, username, body);
     })
     .then(({ rows }) => {
-        console.log(rows);
         response.status(201).send({ comment: rows[0] });
     })
     .catch(next);
