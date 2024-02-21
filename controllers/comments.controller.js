@@ -44,15 +44,4 @@ exports.postComment = (request, response, next) => {
         response.status(201).send({ comment: rows[0] });
     })
     .catch(next);
-
-    // return selectArticle(articleId)
-    // .then(({ rows }) => {
-    //     return (rows.length === 0)
-    //         ? Promise.reject({ status: 404, msg: 'not found' })
-    //         : insertComment(articleId, requestBody.username, requestBody.body);
-    // })
-    // .then(({ rows }) => {
-    //     response.status(201).send({ comment: rows[0] });
-    // })
-    // .catch(next);
 }
