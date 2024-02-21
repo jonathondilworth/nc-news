@@ -10,10 +10,17 @@ exports.selectCommentsByArticleId = (id) => {
 
 exports.insertComment = (articleId, author, body) => {
     return db.query(`
-    INSERT INTO comments
-    (author, body, article_id)
-    VALUES
-    ($1, $2, $3)
-    RETURNING *
+        INSERT INTO comments
+        (author, body, article_id)
+        VALUES
+        ($1, $2, $3)
+        RETURNING *
     `, [author, body, articleId]);
+};
+
+exports.deleteCommentById = (id) => {
+    return db.query(`
+        DELETE FROM comments
+        WHERE comment_id = $1
+    `, [id]);
 };

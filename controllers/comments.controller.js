@@ -1,5 +1,5 @@
 const { selectArticle } = require("../models/articles.model");
-const { selectCommentsByArticleId, insertComment } = require("../models/comments.model");
+const { selectCommentsByArticleId, insertComment, deleteCommentById } = require("../models/comments.model");
 const { selectUserByUsername } = require("../models/users.model");
 
 exports.getCommentsByArticleId = (request, response, next) => {
@@ -45,3 +45,15 @@ exports.postComment = (request, response, next) => {
     })
     .catch(next);
 }
+
+exports.deleteComment = (request, response, next) => {
+    const commentId = request.params.comment_id;
+    return deleteCommentById(commentId)
+    .then(({ rowCount }) => {
+        if (rowCount === 0) {
+            return Promise.reject({ status: 404, msg: 'not found' });
+        }
+        response.status(204).send({});
+    })
+    .catch(next);
+};
