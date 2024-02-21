@@ -3,7 +3,7 @@ const app = express();
 const apiDesc = require('./endpoints');
 const { getTopics } = require('./controllers/topics.controller');
 const { getArticle, getArticles, patchArticleVotes } = require('./controllers/articles.controller');
-const { getCommentsByArticleId, postComment } = require('./controllers/comments.controller');
+const { getCommentsByArticleId, postComment, deleteComment } = require('./controllers/comments.controller');
 
 // middleware
 app.use(express.json());
@@ -21,6 +21,7 @@ app.patch('/api/articles/:article_id', patchArticleVotes);
 // routes: comments
 app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
 app.post('/api/articles/:article_id/comments', postComment);
+app.delete('/api/comments/:comment_id', deleteComment);
 
 // routes: topics
 app.get('/api/topics', getTopics);

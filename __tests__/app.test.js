@@ -5,6 +5,7 @@ const seed = require('../db/seeds/seed');
 const testData = require('../db/data/test-data/index');
 const apiDesc = require('../endpoints');
 const { toBeValidAPIEndpoint, toBeValidRequestMethod } = require('./helpers/custom');
+const { selectCommentsByArticleId } = require('../models/comments.model');
 
 require('jest-sorted')
 
@@ -606,9 +607,58 @@ describe('Comments', () => {
             });
         });
 
-    });
+    }); // Describe: POST /api/articles/:article_id/comments
 
-});
+    describe('DELETE /api/comments/:comment_id', () => {
+        
+        test('should delete a comment via comment_id and respond with a 204', () => {
+            // arrange
+            // comment 16 belongs to article_id 6 and is the only comment on that article
+            const commentId = 16;
+            // act
+            return request(app)
+            .delete(`/api/comments/${commentId}`)
+            .expect(204)
+            .then(() => {
+                // there should now be a total of zero comments on article 6
+                return selectCommentsByArticleId(6);
+            })
+            .then(({ rows }) => {
+                expect(rows).toHaveLength(0);
+            });
+        });
+
+        test('should respond with a 404 status if the comment id is valid but does not exist', () => {
+            // arrange
+            const commentId = 999;
+            // act
+            return request(app)
+			.delete(`/api/comments/${commentId}`)
+			.expect(404)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+        test('should respond with a 400 bad request if the comment id is invalid', () => {
+            // arrange
+            const commentId = 'this-is-not-a-comment-id';
+            // act
+            return request(app)
+			.delete(`/api/comments/${commentId}`)
+			.expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+    }); // Describe: DELETE /api/comments/:comment_id
+
+}); // Describe: Comments
 
 
 describe('Generic Error Handling', () => {
