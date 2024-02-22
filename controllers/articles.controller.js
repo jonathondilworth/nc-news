@@ -11,9 +11,9 @@ exports.getArticle = (request, response, next) => {
 };
 
 exports.getArticles = (request, response, next) => {
-    const { topic } = request.query;
+    const { topic, sort_by, order } = request.query;
     return Promise.all([
-        selectArticles(topic),
+        selectArticles(topic, sort_by, order),
         topic ? selectTopic(topic) : undefined
     ])
     .then((resolved) => {

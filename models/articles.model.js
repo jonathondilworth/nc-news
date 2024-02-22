@@ -31,7 +31,17 @@ exports.checkArticleExists = (id) => {
     });
 };
 
-exports.selectArticles = (topic) => {
+exports.selectArticles = (topic, sort_by = 'created_at', order = 'desc') => {
+    
+    const validSortBys = ['article_id', 'title', 'topic', 'author', 'created_at', 'votes'];
+    const validOrders = ['asc', 'desc'];
+
+    if (!validSortBys.includes(sort_by) && !validOrders.includes(order.toLowerCase())) {
+        return Promise.reject({ status: 400, msg: 'bad request' });
+    }
+
+    const queryVals = [];
+    
     let queryString = `
         SELECT 
             articles.article_id, 
@@ -44,16 +54,14 @@ exports.selectArticles = (topic) => {
             COUNT(comments.comment_id)::INT AS comment_count FROM articles
         LEFT JOIN comments ON articles.article_id = comments.article_id
     `;
-
-    const queryVals = [];
-
+    
     if (topic) {
         queryString += ` WHERE topic = $1 `;
         queryVals.push(topic);
     }
 
     queryString += ` GROUP BY articles.article_id `;
-    queryString += ` ORDER BY articles.created_at DESC `;
+    queryString += ` ORDER BY articles.${sort_by} ${order} `;
 
     return db.query(queryString, queryVals)
     .then(({ rows }) => {
