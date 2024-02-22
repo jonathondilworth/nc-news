@@ -662,6 +662,33 @@ describe('Comments', () => {
 
 }); // Describe: Comments
 
+describe('Users', () => {
+    
+    describe('GET /api/users', () => {
+        
+        test('should respond with (200) an array of user objects, with the appropriate properties', () => {
+            return request(app)
+            .get(`/api/users`)
+            .expect(200)
+            .then((response) => {
+                expect(response.body).toHaveProperty('users');
+                const users = response.body.users;
+                expect(users).toBeInstanceOf(Array);
+                // J.D: This test will break if you modify the users test data (add or remove users)
+                expect(users).toHaveLength(4);
+                users.forEach((user) => {
+                    expect(user).toMatchObject({
+                        'username': expect.any(String),
+                        'name': expect.any(String),
+                        'avatar_url': expect.any(String)
+                    });
+                });
+            });
+        });
+
+    });
+
+});
 
 describe('Generic Error Handling', () => {
 
