@@ -181,60 +181,147 @@ describe('Articles', () => {
             });
         });
 
-        test('should accept a query string containing topic & returns (200) filtered results by topic', () => {
-            return request(app)
-            .get(`/api/articles?topic=cats`)
-            .expect(200)
-            .then((response) => {
-                const articles = response.body.articles;
-                // J.D: there is only one article with topic cats within test data
-                expect(articles).toHaveLength(1);
-                expect(articles[0]).toHaveProperty('article_id', 5);
+        describe('Queries / Query String', () => {
+            
+            test('should ignore any query params that are not valid & should return articles normally', () => {
+                return request(app)
+                .get(`/api/articles?notvalid=cats`)
+                .expect(200)
+                .then((response) => {
+                    const articles = response.body.articles;
+                    expect(articles).toHaveLength(13);
+                });
             });
-        });
 
-        test('should respond with 200 & empty array if topic exists but there are no rows', () => {
-            return request(app)
-            .get(`/api/articles?topic=paper`)
-            .expect(200)
-            .then((response) => {
-                const articles = response.body.articles;
-                expect(articles).toHaveLength(0);
-            });
-        });
+            describe('topic', () => {
+                
+                test('should accept a query string containing topic & returns (200) filtered results by topic', () => {
+                    return request(app)
+                    .get(`/api/articles?topic=cats`)
+                    .expect(200)
+                    .then((response) => {
+                        const articles = response.body.articles;
+                        // J.D: there is only one article with topic cats within test data
+                        expect(articles).toHaveLength(1);
+                        expect(articles[0]).toHaveProperty('article_id', 5);
+                    });
+                });
+        
+                test('should respond with 200 & empty array if topic exists but there are no rows', () => {
+                    return request(app)
+                    .get(`/api/articles?topic=paper`)
+                    .expect(200)
+                    .then((response) => {
+                        const articles = response.body.articles;
+                        expect(articles).toHaveLength(0);
+                    });
+                });
+        
+                test('should respond with 404 not found for topics that do not exist', () => {
+                    return request(app)
+                    .get(`/api/articles?topic=banana`)
+                    .expect(404)
+                    .then((response) => {
+                        expect(response.body).toHaveProperty('msg');
+                        expect(response.body.msg).toBe('not found');
+                    });
+                });
+        
+                /**
+                 * Successful injection attack would return all rows, an unsuccessful attack should result in a 404
+                 */
+                test('should protect agaisnt SQL injection attacks', () => {
+                    return request(app)
+                    .get(`/api/articles?topic=cats'%20OR%201=1;--`) // converted to: cats' OR 1=1;-- by express
+                    .expect(404)
+                    .then((response) => {
+                        expect(response.body).toHaveProperty('msg');
+                        expect(response.body.msg).toBe('not found');
+                    });
+                });
 
-        test('should ignore any query params that are not topic & should return articles normally', () => {
-            return request(app)
-            .get(`/api/articles?nottopic=cats`)
-            .expect(200)
-            .then((response) => {
-                const articles = response.body.articles;
-                // J.D: there are a total of 13 articles within the test data
-                expect(articles).toHaveLength(13);
             });
-        });
 
-        test('should respond with 404 not found for topics that do not exist', () => {
-            return request(app)
-            .get(`/api/articles?topic=banana`)
-            .expect(404)
-            .then((response) => {
-                expect(response.body).toHaveProperty('msg');
-                expect(response.body.msg).toBe('not found');
-            });
-        });
+            describe('sort_by & order', () => {
 
-        /**
-         * Successful injection attack would return all rows, an unsuccessful attack should result in a 404
-         */
-        test('should protect agaisnt SQL injection attacks', () => {
-            return request(app)
-            .get(`/api/articles?topic=cats'%20OR%201=1;--`) // converted to: cats' OR 1=1;-- by express
-            .expect(404)
-            .then((response) => {
-                expect(response.body).toHaveProperty('msg');
-                expect(response.body.msg).toBe('not found');
+                const validColumns = ['article_id', 'title', 'topic', 'author', 'created_at', 'votes'];
+
+                const validOrders = ['asc', 'desc'];
+
+                describe('should accept a query string parameter of sort_by which sorts by any valid column (DESC)', () => {
+                    validColumns.forEach((column) => {
+                        test(`should sort articles by ${column} in DESC order`, () => {
+                            return request(app)
+                            .get(`/api/articles?sort_by=${column}`)
+                            .expect(200)
+                            .then((response) => {
+                                const articles = response.body.articles;
+                                expect(articles.map((article) => {
+                                    return article[column];
+                                })).toBeSorted({
+                                    descending: true
+                                });
+                            });
+                        });
+                    });
+                });
+        
+                describe('should accept a query of sort_by and order which sorts by a valid column in a valid order', () => {
+                    validColumns.forEach((column) => {
+                        validOrders.forEach((order) => {
+                            test(`should sort articles by ${column} in (explicitly) ${order} order`, () => {
+                                return request(app)
+                                .get(`/api/articles?sort_by=${column}&order=${order}`)
+                                .expect(200)
+                                .then((response) => {
+                                    const articles = response.body.articles;
+                                    expect(articles.map((article) => {
+                                        return article[column];
+                                    })).toBeSorted({
+                                        descending: order === 'desc'
+                                    });
+                                });
+                            });
+                        });
+                    });
+                });
+
+                test('should sort by created_at by default, but in ascending order if order=asc provided', () => {
+                    return request(app)
+                    .get(`/api/articles?order=asc`)
+                    .expect(200)
+                    .then((response) => {
+                        const articles = response.body.articles;
+                        expect(articles.map((article) => {
+                            return article.created_at;
+                        })).toBeSorted({
+                            ascending: true
+                        });
+                    });
+                });
+
+                test('should respond with a 400 if sort_by is set but is not a valid column', () => {
+                    return request(app)
+                    .get(`/api/articles?sort_by=not-a-valid-column`)
+                    .expect(400)
+                    .then((response) => {
+                        expect(response.body).toHaveProperty('msg');
+                        expect(response.body.msg).toBe('bad request');
+                    });
+                });
+
+                test('should respond with a 400 bad request if order is defined but invalid', () => {
+                    return request(app)
+                    .get(`/api/articles?order=not-a-valid-order`)
+                    .expect(400)
+                    .then((response) => {
+                        expect(response.body).toHaveProperty('msg');
+                        expect(response.body.msg).toBe('bad request');
+                    });
+                });
+
             });
+
         });
 
     }); // Describe: GET /api/articles

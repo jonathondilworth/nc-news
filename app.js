@@ -45,7 +45,7 @@ app.use((err, request, response, next) => {
 	 * 23502: violates not null constraint
 	 * 23503: foreign key constraint violation
 	 */
-	const badRequestErrCodes = ['22P02', '23502', '23503'];
+	const badRequestErrCodes = ['22P02', '23502', '23503', '42601'];
 	if (badRequestErrCodes.includes(err.code)) {
 		response.status(400).send({ msg: 'bad request' });
 	}
