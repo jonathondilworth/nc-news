@@ -2,7 +2,26 @@ const db = require('../db/connection');
 
 exports.selectArticle = (id) => {
     return db.query(`
-        SELECT * FROM articles 
+        SELECT articles.*, COUNT(comments.comment_id)::INT AS comment_count FROM articles
+        LEFT JOIN comments ON articles.article_id = comments.article_id
+        WHERE articles.article_id = $1
+        GROUP BY articles.article_id
+    `, [id])
+    .then(({ rows }) => {
+        return rows.length === 0
+            ? Promise.reject({ status: 404, msg: 'not found' })
+            : rows[0];
+    });
+};
+
+/**
+ * I was getting an intermittent error occuring (detected deadlock) for some tests
+ * when selectArticle was updated to use a JOIN, this is a temporary work-around &
+ * TODO: implement a checkExists (generic-type) utils function
+ */
+exports.checkArticleExists = (id) => {
+    return db.query(`
+        SELECT * FROM articles
         WHERE article_id = $1
     `, [id])
     .then(({ rows }) => {
@@ -27,7 +46,7 @@ exports.selectArticles = (topic) => {
     `;
 
     const queryVals = [];
-    
+
     if (topic) {
         queryString += ` WHERE topic = $1 `;
         queryVals.push(topic);

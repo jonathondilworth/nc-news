@@ -1,4 +1,4 @@
-const { selectArticle } = require("../models/articles.model");
+const { selectArticle, checkArticleExists } = require("../models/articles.model");
 const { selectCommentsByArticleId, insertComment, deleteCommentById } = require("../models/comments.model");
 const { selectUserByUsername } = require("../models/users.model");
 
@@ -25,7 +25,7 @@ exports.postComment = (request, response, next) => {
     }
     return selectUserByUsername(username)
     .then((result) => {
-        return selectArticle(articleId);
+        return checkArticleExists(articleId);
     })
     .then((result) => {
         return insertComment(articleId, username, body);

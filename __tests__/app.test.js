@@ -243,8 +243,22 @@ describe('Articles', () => {
                      * TODO: could extend custom matcher: toBeValid<Request|APIEndpoint|...> to accept URL
                      * + others & use to validate article_img_url, amongst other things.
                      */
-                    article_img_url: expect.any(String)
+                    article_img_url: expect.any(String),
+                    comment_count: expect.any(Number)
                 });
+            });
+        });
+
+        test('should respond with the appropriate number of comments within comment_count', () => {
+            // arrange
+            const articleId = 9;
+            // act
+            return request(app)
+            .get(`/api/articles/${articleId}`)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body.article).toHaveProperty('comment_count', 2);
             });
         });
 
