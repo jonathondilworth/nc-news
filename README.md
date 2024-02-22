@@ -8,8 +8,6 @@ See the live example hosted [here](https://nc-news-1fcj.onrender.com/api)
 
 To get a local copy up and running follow these simple example steps.
 
-*Note: these instructions are currently for developers wishing to contribute; and as such, information regarding the testing and development databases is included below.*
-
 ### Prerequisites
 
 The required software you need to use this project is listed below:
