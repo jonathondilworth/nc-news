@@ -193,6 +193,16 @@ describe('Articles', () => {
             });
         });
 
+        test('should respond with 200 & empty array if topic exists but there are no rows', () => {
+            return request(app)
+            .get(`/api/articles?topic=paper`)
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles;
+                expect(articles).toHaveLength(0);
+            });
+        });
+
         test('should ignore any query params that are not topic & should return articles normally', () => {
             return request(app)
             .get(`/api/articles?nottopic=cats`)
@@ -204,16 +214,26 @@ describe('Articles', () => {
             });
         });
 
+        test('should respond with 404 not found for topics that do not exist', () => {
+            return request(app)
+            .get(`/api/articles?topic=banana`)
+            .expect(404)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+        /**
+         * Successful injection attack would return all rows, an unsuccessful attack should result in a 404
+         */
         test('should protect agaisnt SQL injection attacks', () => {
             return request(app)
             .get(`/api/articles?topic=cats'%20OR%201=1;--`) // converted to: cats' OR 1=1;-- by express
-            .expect(200)
+            .expect(404)
             .then((response) => {
-                const articles = response.body.articles;
-                // since 1 == 1, if the attack was succesful, 13 rows should be returned
-                // we're expecting pg to escape the characters, zero rows should be returned
-                expect(articles).toHaveLength(0);
-                expect(articles.length).not.toBe(13);
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
             });
         });
 
