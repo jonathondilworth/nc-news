@@ -181,6 +181,42 @@ describe('Articles', () => {
             });
         });
 
+        test('should accept a query string containing topic & returns (200) filtered results by topic', () => {
+            return request(app)
+            .get(`/api/articles?topic=cats`)
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles;
+                // J.D: there is only one article with topic cats within test data
+                expect(articles).toHaveLength(1);
+                expect(articles[0]).toHaveProperty('article_id', 5);
+            });
+        });
+
+        test('should ignore any query params that are not topic & should return articles normally', () => {
+            return request(app)
+            .get(`/api/articles?nottopic=cats`)
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles;
+                // J.D: there are a total of 13 articles within the test data
+                expect(articles).toHaveLength(13);
+            });
+        });
+
+        test('should protect agaisnt SQL injection attacks', () => {
+            return request(app)
+            .get(`/api/articles?topic=cats'%20OR%201=1;--`) // converted to: cats' OR 1=1;-- by express
+            .expect(200)
+            .then((response) => {
+                const articles = response.body.articles;
+                // since 1 == 1, if the attack was succesful, 13 rows should be returned
+                // we're expecting pg to escape the characters, zero rows should be returned
+                expect(articles).toHaveLength(0);
+                expect(articles.length).not.toBe(13);
+            });
+        });
+
     }); // Describe: GET /api/articles
 
     describe('GET /api/articles/:article_id', () => {

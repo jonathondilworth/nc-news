@@ -12,8 +12,8 @@ exports.selectArticle = (id) => {
     });
 };
 
-exports.selectArticles = () => {
-    return db.query(`
+exports.selectArticles = (topic) => {
+    let queryString = `
         SELECT 
             articles.article_id, 
             articles.title, 
@@ -24,9 +24,19 @@ exports.selectArticles = () => {
             articles.article_img_url, 
             COUNT(comments.comment_id)::INT AS comment_count FROM articles
         LEFT JOIN comments ON articles.article_id = comments.article_id
-        GROUP BY articles.article_id
-        ORDER BY articles.created_at DESC
-    `)
+    `;
+
+    const queryVals = [];
+    
+    if (topic) {
+        queryString += ` WHERE topic = $1 `;
+        queryVals.push(topic);
+    }
+
+    queryString += ` GROUP BY articles.article_id `;
+    queryString += ` ORDER BY articles.created_at DESC `;
+
+    return db.query(queryString, queryVals)
     .then(({ rows }) => {
         return rows;
     });

@@ -10,7 +10,8 @@ exports.getArticle = (request, response, next) => {
 };
 
 exports.getArticles = (request, response, next) => {
-    return selectArticles()
+    const { topic } = request.query;
+    return selectArticles(topic)
     .then((result) => {
         response.status(200).send({ articles: result });
     })
