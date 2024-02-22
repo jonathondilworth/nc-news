@@ -4,6 +4,7 @@ const apiDesc = require('./endpoints');
 const { getTopics } = require('./controllers/topics.controller');
 const { getArticle, getArticles, patchArticleVotes } = require('./controllers/articles.controller');
 const { getCommentsByArticleId, postComment, deleteComment } = require('./controllers/comments.controller');
+const { getUsers } = require('./controllers/users.controller');
 
 // middleware
 app.use(express.json());
@@ -25,6 +26,9 @@ app.delete('/api/comments/:comment_id', deleteComment);
 
 // routes: topics
 app.get('/api/topics', getTopics);
+
+// routes: users
+app.get('/api/users', getUsers);
 
 // routes: fallthrough (404)
 app.all('/*', (request, response, next) => {
