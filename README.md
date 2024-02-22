@@ -2,6 +2,8 @@
 
 Backend API for a simple news application
 
+See the live example hosted [here](https://nc-news-1fcj.onrender.com/api)
+
 ## Getting Started
 
 To get a local copy up and running follow these simple example steps.
@@ -14,6 +16,8 @@ The required software you need to use this project is listed below:
 
 * node.js, see: [https://nodejs.org/](https://nodejs.org/)
 * pSQL, see: [https://www.postgresql.org/](https://www.postgresql.org/)
+
+*This project was built using psql v14.10 & node v21.2.0.*
 
 ### Installation
 
@@ -32,6 +36,10 @@ The required software you need to use this project is listed below:
    ```
    PGDATABASE=nc_news
    ```
+   **.env.production:**
+   ```
+   DATABASE_URL=postgres://db.example.com/
+   ```
    *Please check the .env-example file for a template on this projects environment variables.*
 
 3. Install NPM packages:
@@ -48,3 +56,10 @@ The required software you need to use this project is listed below:
    ```sh
    npm run seed
    ```
+
+### Running Tests
+
+```sh
+npm run test
+```
+
