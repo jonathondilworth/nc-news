@@ -85,6 +85,22 @@
       }
     }
   },
+  "PATCH /api/comments/:comment_id": {
+    "description": "accepts a body consisting of a vote count to increment a comment by through the :comment_id",
+    "body": {
+      "inc_votes": 42
+    },
+    "exampleResponse": {
+      "comment": {
+        "comment_id": 42,
+        "votes": 0,
+        "created_at": "2020-04-06 13:17:00",
+        "author": "example",
+        "body": "example",
+        "article_id": 42
+      }
+    }
+  },
   "PATCH /api/articles/:article_id": {
     "description": "accepts a body consisting of a vote count to increment an article by through the :article_id",
     "body": {
