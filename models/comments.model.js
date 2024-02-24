@@ -37,3 +37,17 @@ exports.deleteCommentById = (id) => {
             : rows;
     });
 };
+
+exports.updateCommentVotes = (id, voteCount) => {
+    return db.query(`
+        UPDATE comments
+        SET votes = votes + $1
+        WHERE comment_id = $2
+        RETURNING *
+    `, [voteCount, id])
+    .then(({ rows }) => {
+        return rows.length === 0
+            ? Promise.reject({ status: 404, msg: 'not found' })
+            : rows[0];
+    });
+};

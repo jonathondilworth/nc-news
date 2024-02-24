@@ -3,7 +3,7 @@ const app = express();
 const apiDesc = require('./endpoints');
 const { getTopics } = require('./controllers/topics.controller');
 const { getArticle, getArticles, patchArticleVotes } = require('./controllers/articles.controller');
-const { getCommentsByArticleId, postComment, deleteComment } = require('./controllers/comments.controller');
+const { getCommentsByArticleId, postComment, deleteComment, patchCommentVotes } = require('./controllers/comments.controller');
 const { getUsers, getUser } = require('./controllers/users.controller');
 
 // middleware
@@ -23,6 +23,7 @@ app.patch('/api/articles/:article_id', patchArticleVotes);
 app.get('/api/articles/:article_id/comments', getCommentsByArticleId);
 app.post('/api/articles/:article_id/comments', postComment);
 app.delete('/api/comments/:comment_id', deleteComment);
+app.patch('/api/comments/:comment_id', patchCommentVotes);
 
 // routes: topics
 app.get('/api/topics', getTopics);
@@ -35,6 +36,10 @@ app.get('/api/users/:username', getUser);
 app.all('/*', (request, response, next) => {
 	response.status(404).send({ msg: 'not found' });
 });
+
+/**
+ * TODO: refactor error handling into its own controller
+ */
 
 // register error handling middleware: pSQL errors
 app.use((err, request, response, next) => {

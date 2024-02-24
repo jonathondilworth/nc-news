@@ -817,6 +817,115 @@ describe('Comments', () => {
 
     }); // Describe: DELETE /api/comments/:comment_id
 
+    describe('PATCH /api/comments/:comment_id', () => {
+
+        test('should accept a body of form { inc_votes: x }, updates correct comment by x votes & responds /w updated obj', () => {
+            // arrange
+            const commentId = 5;
+            const patchBody = { inc_votes: 42 };
+            // act
+            return request(app)
+            .patch(`/api/comments/${commentId}`)
+            .send(patchBody)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('comment');
+                expect(response.body.comment).toHaveProperty('votes', 42);
+                expect(response.body.comment).toMatchObject({
+                    comment_id: expect.any(Number),
+                    body: expect.any(String),
+                    article_id: expect.any(Number),
+                    author: expect.any(String),
+                    votes: expect.any(Number),
+                    created_at: expect.any(String),
+                });
+            });
+        });
+
+        test('should also function as expected with negative numbers (decrement the vote count)', () => {
+            // arrange
+            const commentId = 5;
+            const patchBody = { inc_votes: -42 };
+            // act
+            return request(app)
+            .patch(`/api/comments/${commentId}`)
+            .send(patchBody)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body.comment).toHaveProperty('votes', -42);
+            });
+        });
+
+        test('should respond /w 200 & unaltered comment if inc_votes is not within the payload (ignores extra properties)', () => {
+            // arrange
+            const commentId = 5;
+            const patchBody = {
+                some_random_key: 'random data', 
+                not_inc_votes: 42
+            };
+            // act
+            return request(app)
+            .patch(`/api/comments/${commentId}`)
+            .send(patchBody)
+            .expect(200)
+            .then((response) => {
+                // assert
+                expect(response.body.comment).toHaveProperty('votes', 0);
+            });
+        });
+
+        test('should respond with a 404 not found if the comment id is valid, but does not exist', () => {
+            // arrange
+            const commentId = 999;
+            const patchBody = { inc_votes: 42 };
+            // act
+            return request(app)
+            .patch(`/api/comments/${commentId}`)
+            .send(patchBody)
+            .expect(404)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+        test('should respond with a 400 bad request if the comment id is invalid', () => {
+            // arrange
+            const commentId = "this-is-not-an-comment-id";
+            const patchBody = { inc_votes: 42 };
+            // act
+            return request(app)
+            .patch(`/api/comments/${commentId}`)
+            .send(patchBody)
+            .expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+
+        test('should respond with a 400 bad request if the payload value is invalid', () => {
+            // arrange
+            const commentId = 5;
+            const patchBody = { inc_votes: 'not-a-number' };
+            // act
+            return request(app)
+            .patch(`/api/comments/${commentId}`)
+            .send(patchBody)
+            .expect(400)
+            .then((response) => {
+                // assert
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('bad request');
+            });
+        });
+        
+    });
+
 }); // Describe: Comments
 
 describe('Users', () => {
