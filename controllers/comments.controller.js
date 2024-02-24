@@ -1,5 +1,5 @@
 const { selectArticle, checkArticleExists } = require("../models/articles.model");
-const { selectCommentsByArticleId, insertComment, deleteCommentById } = require("../models/comments.model");
+const { selectCommentsByArticleId, insertComment, deleteCommentById, updateCommentVotes } = require("../models/comments.model");
 const { selectUserByUsername } = require("../models/users.model");
 
 exports.getCommentsByArticleId = (request, response, next) => {
@@ -41,6 +41,20 @@ exports.deleteComment = (request, response, next) => {
     return deleteCommentById(commentId)
     .then((result) => {
         response.status(204).send();
+    })
+    .catch(next);
+};
+
+/**
+ * TODO: refactor all controller methods to destructure parameters from request (query || params)
+ */
+
+exports.patchCommentVotes = (request, response, next) => {
+    const { comment_id } = request.params;
+    const voteCount = request.body.inc_votes ?? 0;
+    return updateCommentVotes(comment_id, voteCount)
+    .then((result) => {
+        response.status(200).send({ comment: result });
     })
     .catch(next);
 };
