@@ -845,6 +845,35 @@ describe('Users', () => {
 
     });
 
+    describe('GET /api/users/:username', () => {
+        
+        test('should respond with a user object with the appropriate properties', () => {
+            return request(app)
+            .get(`/api/users/lurker`)
+            .expect(200)
+            .then((response) => {
+                expect(response.body).toHaveProperty('user');
+                const user = response.body.user;
+                expect(user).toEqual({
+                    'username': 'lurker',
+                    'name': 'do_nothing',
+                    'avatar_url': 'https://www.golenbock.com/wp-content/uploads/2015/01/placeholder-user.png'
+                });
+            });
+        });
+
+        test('should respond with a 404 not found for a user that does not exist in the databse', () => {
+            return request(app)
+            .get(`/api/users/not-a-user`)
+            .expect(404)
+            .then((response) => {
+                expect(response.body).toHaveProperty('msg');
+                expect(response.body.msg).toBe('not found');
+            });
+        });
+
+    });
+
 });
 
 describe('Generic Error Handling', () => {
