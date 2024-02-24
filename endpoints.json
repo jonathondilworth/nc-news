@@ -122,5 +122,16 @@
         }
       ]
     }
+  },
+  "GET /api/user/:username": {
+    "description": "responds with a single user selected by :username or a 404",
+    "queries": [],
+    "exampleResponse": {
+      "user": {
+        "username": "rogersop",
+        "name": "paul",
+        "avatar_url": "https://avatars2.githubusercontent.com/u/24394918?s=400&v=4" 
+      }
+    }
   }
 }
