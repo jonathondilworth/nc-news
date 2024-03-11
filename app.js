@@ -5,8 +5,10 @@ const { getTopics } = require('./controllers/topics.controller');
 const { getArticle, getArticles, patchArticleVotes } = require('./controllers/articles.controller');
 const { getCommentsByArticleId, postComment, deleteComment, patchCommentVotes } = require('./controllers/comments.controller');
 const { getUsers, getUser } = require('./controllers/users.controller');
+const cors = require('cors');
 
 // middleware
+app.use(cors());
 app.use(express.json());
 
 // routes: specification
